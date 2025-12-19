@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VeteranMeet API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
+        .status { background: #27ae60; color: white; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 30px; }
+        .endpoints { background: #ecf0f1; padding: 20px; border-radius: 5px; }
+        .endpoint { margin: 10px 0; padding: 10px; background: white; border-left: 4px solid #3498db; }
+        .method { background: #3498db; color: white; padding: 2px 8px; border-radius: 3px; font-size: 12px; }
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎖️ VeteranMeet API</h1>
+        <div class="status">✅ Server is running successfully</div>
+        
+        <h2>Available Endpoints</h2>
+        <div class="endpoints">
+            <div class="endpoint">
+                <span class="method">GET</span> <a href="/admin/">/admin/</a> - Admin Panel
+            </div>
+            <div class="endpoint">
+                <span class="method">POST</span> <a href="/api/auth/register/">/api/auth/register/</a> - User Registration
+            </div>
+            <div class="endpoint">
+                <span class="method">POST</span> <a href="/api/auth/login/">/api/auth/login/</a> - User Login
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span> <a href="/api/auth/profile/">/api/auth/profile/</a> - User Profile
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span> <a href="/api/events/">/api/events/</a> - Events
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span> <a href="/api/posts/">/api/posts/</a> - Posts
+            </div>
+            <div class="endpoint">
+                <span class="method">GET</span> <a href="/api/notifications/">/api/notifications/</a> - Notifications
+            </div>
+        </div>
+        
+        <h2>Features</h2>
+        <ul>
+            <li>JWT Authentication</li>
+            <li>User Profiles & Star Rating</li>
+            <li>Event Management</li>
+            <li>Social Posts & Comments</li>
+            <li>Real-time Notifications</li>
+        </ul>
+    </div>
+</body>
+</html>
