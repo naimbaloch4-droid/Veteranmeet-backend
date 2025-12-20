@@ -28,16 +28,27 @@ class RegisterView(generics.CreateAPIView):
 def login_view(request):
     email = request.data.get('email')
     password = request.data.get('password')
-    
+
+    print(f"Login attempt: email={email}, password provided={bool(password)}")  # Debug logging
+
     if email and password:
-        user = authenticate(username=email, password=password)
-        if user:
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'user': UserSerializer(user).data,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
+        try:
+            user = User.objects.get(email=email)
+            print(f"User found: {user.email}, is_active={user.is_active}")  # Debug logging
+            if user.check_password(password) and user.is_active:
+                print("Password check passed, generating tokens")  # Debug logging
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'user': UserSerializer(user).data,
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                })
+            else:
+                print("Password check failed or user inactive")  # Debug logging
+        except User.DoesNotExist:
+            print(f"User with email {email} does not exist")  # Debug logging
+    else:
+        print("Email or password missing")  # Debug logging
     return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 class ProfileView(generics.RetrieveUpdateAPIView):
