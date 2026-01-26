@@ -75,7 +75,16 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
-        message = self.get_object()
-        message.is_read = True
-        message.save()
-        return Response({'status': 'marked as read'})
+        try:
+            # Direct lookup by PK to ensure it exists
+            message = ChatMessage.objects.get(pk=pk)
+            
+            # Security check: User must be in the room
+            if not request.user.is_superuser and not message.room.participants.filter(id=request.user.id).exists():
+                return Response({'error': 'Not authorized'}, status=status.HTTP_403_FORBIDDEN)
+                
+            message.is_read = True
+            message.save()
+            return Response({'status': 'marked as read'})
+        except ChatMessage.DoesNotExist:
+            return Response({'error': 'Message not found'}, status=status.HTTP_404_NOT_FOUND)
