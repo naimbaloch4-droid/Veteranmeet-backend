@@ -39,7 +39,8 @@ def user_feed(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_followers(request):
-    followers = User.objects.filter(following__following=request.user)
+    # Get everyone who follows the current user, excluding Admins
+    followers = User.objects.filter(following__following=request.user).exclude(is_superuser=True)
     from .serializers import UserSerializer
     serializer = UserSerializer(followers, many=True, context={'request': request})
     return Response(serializer.data)
@@ -47,10 +48,12 @@ def get_followers(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_following(request):
-    following = User.objects.filter(followers__follower=request.user)
+    # Get everyone the current user follows, excluding Admins
+    following = User.objects.filter(followers__follower=request.user).exclude(is_superuser=True)
     from .serializers import UserSerializer
     serializer = UserSerializer(following, many=True, context={'request': request})
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
