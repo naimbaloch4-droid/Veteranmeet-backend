@@ -78,6 +78,35 @@ A Django REST API for a veteran community platform with user profiles, events, p
 - `POST /api/notifications/mark-all-read/` - Mark all notifications as read
 - `GET /api/notifications/unread-count/` - Get unread notifications count
 
+### Veteran Hub
+- `GET /api/hub/dashboard/` - Get personalized dashboard with stats, recent posts, events
+- `GET /api/hub/stats/` - Get user statistics
+- `GET /api/hub/announcements/` - List active announcements
+
+### Chat
+- `GET/POST /api/chat/rooms/` - List/create chat rooms
+- `GET/PUT/DELETE /api/chat/rooms/<id>/` - Chat room operations
+- `POST /api/chat/rooms/create_direct_chat/` - Create direct chat with another user
+- `GET/POST /api/chat/messages/` - List/send messages (filter by room_id)
+- `POST /api/chat/messages/<id>/mark_read/` - Mark message as read
+
+### Support Groups
+- `GET/POST /api/support-groups/groups/` - List/create support groups
+- `GET/PUT/DELETE /api/support-groups/groups/<id>/` - Group operations
+- `POST /api/support-groups/groups/<id>/join/` - Join support group
+- `POST /api/support-groups/groups/<id>/leave/` - Leave support group
+- `GET /api/support-groups/groups/<id>/members/` - List group members
+- `GET/POST /api/support-groups/groups/<id>/posts/` - List/create group posts
+- `GET/PUT/DELETE /api/support-groups/posts/<id>/` - Group post operations
+
+### Resources
+- `GET /api/resources/categories/` - List resource categories
+- `GET/POST /api/resources/resources/` - List/create resources
+- `GET/PUT/DELETE /api/resources/resources/<id>/` - Resource operations
+- `POST /api/resources/resources/<id>/bookmark/` - Bookmark/unbookmark resource
+- `GET/POST /api/resources/resources/<id>/ratings/` - List/create resource ratings
+- `GET /api/resources/resources/bookmarked/` - List user's bookmarked resources
+
 ## Models
 
 ### User & Profile

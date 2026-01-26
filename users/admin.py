@@ -17,5 +17,5 @@ class ProfileAdmin(admin.ModelAdmin):
 
 @admin.register(Star)
 class StarAdmin(admin.ModelAdmin):
-    list_display = ('giver', 'receiver', 'created_at')
+    list_display = ('receiver', 'quantity', 'event', 'created_at')
     list_filter = ('created_at',)

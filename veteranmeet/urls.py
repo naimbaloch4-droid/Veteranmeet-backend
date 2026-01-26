@@ -11,7 +11,7 @@ schema_view = get_schema_view(
    openapi.Info(
       title="VeteranMeet API",
       default_version='v1',
-      description="A Django REST API for a veteran community platform",
+      description="A comprehensive Django REST API for a veteran community platform with chat, support groups, resources, and hub features",
    ),
    public=True,
    permission_classes=(permissions.AllowAny,),
@@ -26,6 +26,10 @@ urlpatterns = [
     path('api/events/', include('events.urls')),
     path('api/posts/', include('posts.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('api/chat/', include('chat.urls')),
+    path('api/support-groups/', include('support_groups.urls')),
+    path('api/resources/', include('resources.urls')),
+    path('api/hub/', include('veteran_hub.urls')),
 ]
 
 if settings.DEBUG:

@@ -1,0 +1,58 @@
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
+from .models import ChatRoom, ChatMessage
+from .serializers import ChatRoomSerializer, ChatMessageSerializer
+
+class ChatRoomViewSet(viewsets.ModelViewSet):
+    serializer_class = ChatRoomSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return ChatRoom.objects.all()
+        return ChatRoom.objects.filter(participants=self.request.user).distinct()
+
+    @action(detail=False, methods=['post'])
+    def create_direct_chat(self, request):
+        other_user_id = request.data.get('user_id')
+        if not other_user_id:
+            return Response({'error': 'user_id required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if direct chat already exists
+        existing_room = ChatRoom.objects.filter(
+            room_type='direct',
+            participants=request.user
+        ).filter(participants=other_user_id).first()
+        
+        if existing_room:
+            serializer = self.get_serializer(existing_room)
+            return Response(serializer.data)
+        
+        # Create new direct chat
+        room = ChatRoom.objects.create(room_type='direct')
+        room.participants.set([request.user.id, other_user_id])
+        serializer = self.get_serializer(room)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class ChatMessageViewSet(viewsets.ModelViewSet):
+    serializer_class = ChatMessageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        room_id = self.request.query_params.get('room_id')
+        if room_id:
+            queryset = ChatMessage.objects.filter(room_id=room_id)
+            if not self.request.user.is_superuser:
+                queryset = queryset.filter(room__participants=self.request.user)
+            return queryset
+        return ChatMessage.objects.none()
+
+    @action(detail=True, methods=['post'])
+    def mark_read(self, request, pk=None):
+        message = self.get_object()
+        message.is_read = True
+        message.save()
+        return Response({'status': 'marked as read'})
