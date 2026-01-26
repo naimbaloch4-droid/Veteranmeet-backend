@@ -56,8 +56,15 @@ def get_following(request):
 @permission_classes([IsAuthenticated])
 def get_suggestions(request):
     # Suggest users that the current user is not already following
-    following_ids = request.user.following.values_list('following_id', flat=True)
-    suggestions = User.objects.exclude(id__in=following_ids).exclude(id=request.user.id).order_by('?')[:5]
+    # request.user.following refers to the 'Follow' objects where the user is the 'follower'
+    following_ids = list(request.user.following.values_list('following_id', flat=True))
+    
+    # We exclude: 1. People already followed, 2. The user themselves
+    exclude_ids = following_ids + [request.user.id]
+    
+    suggestions = User.objects.exclude(id__in=exclude_ids).order_by('?')[:5]
+    
+    print(f"DEBUG: Suggestions for {request.user.email} -> Excluding IDs: {exclude_ids}")
     
     from .serializers import UserSerializer
     serializer = UserSerializer(suggestions, many=True, context={'request': request})
