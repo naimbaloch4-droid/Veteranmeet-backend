@@ -119,15 +119,42 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:3001",
     "http://127.0.0.1:3000",
+    "https://veteranmeet-frontend.vercel.app",
+    "https://veteranmeet-frontend-git-main-naimbaloch4-droid.vercel.app",
     "https://*.vercel.app",  # Support Vercel previews
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 # CSRF settings for production
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
     "http://localhost:3000",
-    "https://*.vercel.app",  # Support Vercel previews
+    "http://localhost:3001",
+    "https://veteranmeet-frontend.vercel.app",
+    "https://veteranmeet-frontend-git-main-naimbaloch4-droid.vercel.app",
+    "https://*.vercel.app",
 ]
