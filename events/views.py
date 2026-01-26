@@ -55,33 +55,33 @@ def join_event(request, event_id):
         )
 
         if created:
-            # Award stars - use get_or_create to avoid duplicates
+            # Award stars - ensured minimum 100 stars for joining
             star_points = max(event.star_points, 100)
-            try:
-                star, star_created = Star.objects.get_or_create(
-                    receiver=request.user,
-                    event=event,
-                    defaults={'quantity': star_points}
-                )
-                
-                return Response({
-                    'message': 'Successfully joined event',
-                    'stars_awarded': star_points,
-                    'star_created': star_created,
-                    'total_stars': request.user.star_rating
-                })
-            except Exception as star_error:
-                return Response({
-                    'message': 'Joined event but star creation failed',
-                    'star_error': str(star_error)
-                })
+            
+            # Explicitly search with giver=None to match system-awarded stars
+            star, star_created = Star.objects.get_or_create(
+                receiver=request.user,
+                event=event,
+                giver=None,
+                defaults={'quantity': star_points}
+            )
+            
+            print(f"DEBUG: User {request.user.email} joined {event.title}. Stars Awarded: {star_points}. Created: {star_created}")
+
+            return Response({
+                'message': 'Successfully joined event',
+                'stars_awarded': star_points,
+                'total_stars': request.user.star_rating,
+                'category': request.user.veteran_category
+            })
         else:
             # Remove stars when leaving
-            Star.objects.filter(receiver=request.user, event=event).delete()
+            Star.objects.filter(receiver=request.user, event=event, giver=None).delete()
             participant.delete()
             return Response({
                 'message': 'Left event',
-                'total_stars': request.user.star_rating
+                'total_stars': request.user.star_rating,
+                'category': request.user.veteran_category
             })
     except Exception as e:
         return Response({'error': str(e)}, status=500)
