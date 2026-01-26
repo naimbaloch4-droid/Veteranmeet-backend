@@ -17,8 +17,24 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             return ChatRoom.objects.all()
         return ChatRoom.objects.filter(participants=self.request.user).distinct()
 
+    @action(detail=True, methods=['get'])
+    def sync(self, request, pk=None):
+        room = self.get_object()
+        last_sync = request.query_params.get('last_sync')
+        
+        queryset = room.messages.all()
+        if last_sync:
+            queryset = queryset.filter(created_at__gt=last_sync)
+        
+        serializer = ChatMessageSerializer(queryset, many=True)
+        return Response({
+            'messages': serializer.data,
+            'server_time': timezone.now().isoformat()
+        })
+
     @action(detail=False, methods=['post'])
     def create_direct_chat(self, request):
+
         other_user_id = request.data.get('user_id')
         if not other_user_id:
             return Response({'error': 'user_id required'}, status=status.HTTP_400_BAD_REQUEST)
