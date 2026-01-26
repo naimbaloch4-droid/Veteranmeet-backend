@@ -59,10 +59,10 @@ def get_suggestions(request):
     # request.user.following refers to the 'Follow' objects where the user is the 'follower'
     following_ids = list(request.user.following.values_list('following_id', flat=True))
     
-    # We exclude: 1. People already followed, 2. The user themselves
+    # We exclude: 1. People already followed, 2. The user themselves, 3. Admins (superusers)
     exclude_ids = following_ids + [request.user.id]
     
-    suggestions = User.objects.exclude(id__in=exclude_ids).order_by('?')[:5]
+    suggestions = User.objects.exclude(id__in=exclude_ids).exclude(is_superuser=True).order_by('?')[:5]
     
     print(f"DEBUG: Suggestions for {request.user.email} -> Excluding IDs: {exclude_ids}")
     
