@@ -81,9 +81,16 @@ from django.dispatch import receiver as signal_receiver
 @signal_receiver(post_save, sender=Star)
 @signal_receiver(post_delete, sender=Star)
 def update_user_stats(sender, instance, **kwargs):
-    from veteran_hub.models import UserStats
-    user = instance.receiver
-    stats, _ = UserStats.objects.get_or_create(user=user)
-    stats.connections_made = user.star_rating
-    stats.save()
-    print(f"SIGNAL: Updated stats for {user.email}. New total stars in Stats: {stats.connections_made}")
+    try:
+        from veteran_hub.models import UserStats
+        user = instance.receiver
+        if not user:
+            return
+            
+        stats, created = UserStats.objects.get_or_create(user=user)
+        # Force a fresh count of the stars from the DB
+        stats.connections_made = user.star_rating
+        stats.save()
+        print(f"SIGNAL: Updated stats for {user.email}. Total: {stats.connections_made}")
+    except Exception as e:
+        print(f"SIGNAL ERROR: Could not update UserStats: {str(e)}")

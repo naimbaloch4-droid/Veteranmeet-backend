@@ -90,7 +90,14 @@ def join_event(request, event_id):
                 'category': request.user.veteran_category
             })
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"CRITICAL ERROR in join_event: {str(e)}\n{error_details}")
+        return Response({
+            'error': 'Internal Server Error',
+            'message': str(e),
+            'details': 'Please check server logs for full traceback'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
