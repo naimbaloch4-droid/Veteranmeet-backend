@@ -2,45 +2,44 @@ import os
 import django
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
-
-# Set up Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'veteranmeet.settings')
 django.setup()
 
 from django.contrib.auth import get_user_model
-
 User = get_user_model()
 
-def create_superuser():
+def create_or_fix_superuser():
     email = 'admin@gmail.com'
+    username = 'admin_main'
     password = 'admin123'
     
-    user = User.objects.filter(email=email).first()
+    # Try to find user by email OR username
+    user = User.objects.filter(email=email).first() or User.objects.filter(username=username).first()
+    
     if user:
-        print(f"DEBUG: Found existing user {email}. Updating permissions...")
+        print(f"DEBUG: Found existing user {user.email}. Fixing permissions...")
+        user.email = email
+        user.username = username
         user.set_password(password)
         user.is_staff = True
         user.is_superuser = True
         user.is_active = True
         user.save()
-        print(f"DEBUG: Status for {email} -> is_staff: {user.is_staff}, is_superuser: {user.is_superuser}, is_active: {user.is_active}")
-        print(f"Superuser {email} reset to password 'admin123'.")
-        return
-    
-    try:
-        print(f"DEBUG: Creating new superuser {email}...")
-        User.objects.create_superuser(
-            email=email, 
-            password=password,
-            username='admin_main',
-            first_name='Admin',
-            last_name='User'
-        )
-        print(f"Superuser {email} created successfully.")
-    except Exception as e:
-        print(f"CRITICAL ERROR: {e}")
+        print(f"SUCCESS: Admin account fixed. Log in with {email} / {password}")
+    else:
+        print(f"DEBUG: Creating brand new superuser {email}...")
+        try:
+            User.objects.create_superuser(
+                email=email, 
+                password=password,
+                username=username,
+                first_name='Admin',
+                last_name='User'
+            )
+            print(f"SUCCESS: New superuser created. Log in with {email} / {password}")
+        except Exception as e:
+            print(f"CRITICAL ERROR: {e}")
 
 if __name__ == '__main__':
-    create_superuser()
+    create_or_fix_superuser()
