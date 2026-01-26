@@ -68,8 +68,9 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
                 recipient=participant,
                 sender=sender,
                 notification_type='message',
-                message=f"New message from {sender.username}",
-                related_object_id=message.id
+                title=f"New message from {sender.username}",
+                message=message.content[:100],
+                object_id=message.id
             )
 
     @action(detail=True, methods=['post'])

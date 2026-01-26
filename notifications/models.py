@@ -8,6 +8,8 @@ class Notification(models.Model):
         ('star', 'Star'),
         ('event_join', 'Event Join'),
         ('event_reminder', 'Event Reminder'),
+        ('message', 'Message'),
+        ('follow', 'Follow'),
     )
     
     recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
