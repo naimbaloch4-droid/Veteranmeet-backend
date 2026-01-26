@@ -22,7 +22,13 @@ def create_superuser():
         return
     
     try:
-        User.objects.create_superuser(email=email, password=password)
+        User.objects.create_superuser(
+            email=email, 
+            password=password,
+            username='admin',
+            first_name='Admin',
+            last_name='User'
+        )
         print(f"Superuser {email} created successfully.")
     except Exception as e:
         print(f"Error creating superuser: {e}")

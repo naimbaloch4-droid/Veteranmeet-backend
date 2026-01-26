@@ -12,6 +12,8 @@ class EventListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Event.objects.none()
         if self.request.user.is_superuser:
             return Event.objects.all()
         return Event.objects.filter(is_active=True)
@@ -25,6 +27,8 @@ class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Event.objects.none()
         if self.request.user.is_superuser:
             return Event.objects.all()
         return Event.objects.filter(organizer=self.request.user)

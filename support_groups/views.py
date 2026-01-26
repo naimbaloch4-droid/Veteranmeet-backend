@@ -11,6 +11,8 @@ class SupportGroupViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return SupportGroup.objects.none()
         if self.request.user.is_superuser:
             return SupportGroup.objects.all()
         queryset = SupportGroup.objects.all()
@@ -75,6 +77,8 @@ class GroupPostViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return GroupPost.objects.none()
         if self.request.user.is_superuser:
             return GroupPost.objects.all()
         return GroupPost.objects.filter(group__members=self.request.user)

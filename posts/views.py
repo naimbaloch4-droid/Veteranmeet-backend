@@ -20,6 +20,8 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Post.objects.none()
         # Superusers can access all posts for moderation, others only their own
         if self.request.user.is_superuser:
             return Post.objects.all()
@@ -56,6 +58,8 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Comment.objects.none()
         if self.request.user.is_superuser:
             return Comment.objects.all()
         return Comment.objects.filter(author=self.request.user)

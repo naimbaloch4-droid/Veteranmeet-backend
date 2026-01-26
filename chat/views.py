@@ -11,6 +11,8 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return ChatRoom.objects.none()
         if self.request.user.is_superuser:
             return ChatRoom.objects.all()
         return ChatRoom.objects.filter(participants=self.request.user).distinct()
@@ -42,6 +44,8 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return ChatMessage.objects.none()
         room_id = self.request.query_params.get('room_id')
         if room_id:
             queryset = ChatMessage.objects.filter(room_id=room_id)
