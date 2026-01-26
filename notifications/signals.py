@@ -32,12 +32,21 @@ def create_comment_notification(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Star)
 def create_star_notification(sender, instance, created, **kwargs):
     if created:
+        sender_name = "System"
+        msg = "You received a star"
+        
+        if instance.giver:
+            sender_name = instance.giver.get_full_name() or instance.giver.username
+            msg = f'{sender_name} gave you a star'
+        elif instance.event:
+            msg = f"You earned {instance.quantity} stars for joining: {instance.event.title}"
+        
         Notification.objects.create(
             recipient=instance.receiver,
             sender=instance.giver,
             notification_type='star',
-            title='New Star',
-            message=f'{instance.giver.get_full_name()} gave you a star',
+            title='New Stars' if instance.quantity > 1 else 'New Star',
+            message=msg,
             object_id=instance.id
         )
 
