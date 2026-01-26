@@ -38,13 +38,15 @@ def dashboard(request):
     
     # Get or create user stats
     stats, created = UserStats.objects.get_or_create(user=user)
-    if created:
-        # Initialize stats
-        stats.posts_count = Post.objects.filter(author=user).count()
-        stats.events_joined = user.joined_events.count()
-        stats.connections_made = user.stars_received.count()
-        stats.resources_shared = 0  # Placeholder, as user.submitted_resources does not exist
-        stats.save()
+    
+    # Refresh stats calculation every time the dashboard is viewed
+    stats.posts_count = Post.objects.filter(author=user).count()
+    stats.events_joined = user.joined_events.count()
+    stats.connections_made = user.star_rating # Using star_rating as 'Connections' impact
+    stats.followers_count = user.followers.count()
+    stats.following_count = user.following.count()
+    stats.resources_shared = 0  
+    stats.save()
     
     # Get recent posts
     recent_posts = Post.objects.all()[:5]

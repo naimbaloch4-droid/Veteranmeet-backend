@@ -28,6 +28,8 @@ class UserStats(models.Model):
     posts_count = models.IntegerField(default=0)
     events_joined = models.IntegerField(default=0)
     connections_made = models.IntegerField(default=0)
+    followers_count = models.IntegerField(default=0)
+    following_count = models.IntegerField(default=0)
     resources_shared = models.IntegerField(default=0)
     last_updated = models.DateTimeField(auto_now=True)
 

@@ -19,7 +19,7 @@ class UserStatsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserStats
-        fields = ['id', 'user', 'posts_count', 'events_joined', 'connections_made', 'resources_shared', 'last_updated']
+        fields = ['id', 'user', 'posts_count', 'events_joined', 'connections_made', 'followers_count', 'following_count', 'resources_shared', 'last_updated']
 
 class DashboardSerializer(serializers.Serializer):
     recent_posts = serializers.ListField(read_only=True)

@@ -35,3 +35,30 @@ def user_feed(request):
     posts = Post.objects.filter(author__in=following_users).order_by('-created_at')[:20]
     serializer = PostSerializer(posts, many=True, context={'request': request})
     return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_followers(request):
+    followers = User.objects.filter(following__following=request.user)
+    from .serializers import UserSerializer
+    serializer = UserSerializer(followers, many=True, context={'request': request})
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_following(request):
+    following = User.objects.filter(followers__follower=request.user)
+    from .serializers import UserSerializer
+    serializer = UserSerializer(following, many=True, context={'request': request})
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_suggestions(request):
+    # Suggest users that the current user is not already following
+    following_ids = request.user.following.values_list('following_id', flat=True)
+    suggestions = User.objects.exclude(id__in=following_ids).exclude(id=request.user.id).order_by('?')[:5]
+    
+    from .serializers import UserSerializer
+    serializer = UserSerializer(suggestions, many=True, context={'request': request})
+    return Response(serializer.data)

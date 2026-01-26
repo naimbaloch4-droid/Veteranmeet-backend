@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from . import views
-from .follow_views import follow_user, user_feed
+from .follow_views import follow_user, user_feed, get_followers, get_following, get_suggestions
 
 app_name = 'users'
 
@@ -17,5 +17,8 @@ urlpatterns = [
     path('users/<int:user_id>/stars/', views.UserStarsView.as_view(), name='user-stars'),
     path('give-star/<int:user_id>/', views.give_star, name='give-star'),
     path('follow/<int:user_id>/', follow_user, name='follow-user'),
+    path('followers/', get_followers, name='followers'),
+    path('following/', get_following, name='following'),
+    path('suggestions/', get_suggestions, name='suggestions'),
     path('feed/', user_feed, name='user-feed'),
 ]
