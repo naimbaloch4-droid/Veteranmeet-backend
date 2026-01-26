@@ -54,6 +54,24 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             return queryset
         return ChatMessage.objects.none()
 
+    def perform_create(self, serializer):
+        message = serializer.save()
+        
+        # Logic to notify other participants in the room
+        room = message.room
+        sender = message.sender
+        participants = room.participants.exclude(id=sender.id)
+        
+        from notifications.models import Notification
+        for participant in participants:
+            Notification.objects.create(
+                recipient=participant,
+                sender=sender,
+                notification_type='message',
+                message=f"New message from {sender.username}",
+                related_object_id=message.id
+            )
+
     @action(detail=True, methods=['post'])
     def mark_read(self, request, pk=None):
         message = self.get_object()
