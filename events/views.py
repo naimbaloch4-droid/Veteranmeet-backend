@@ -59,14 +59,17 @@ def join_event(request, event_id):
             star_points = max(event.star_points, 100)
             
             # Explicitly search with giver=None to match system-awarded stars
-            star, star_created = Star.objects.get_or_create(
+            Star.objects.get_or_create(
                 receiver=request.user,
                 event=event,
                 giver=None,
                 defaults={'quantity': star_points}
             )
             
-            print(f"DEBUG: User {request.user.email} joined {event.title}. Stars Awarded: {star_points}. Created: {star_created}")
+            # CRITICAL: Refresh user to pick up new star records
+            request.user.refresh_from_db()
+            
+            print(f"DEBUG: User {request.user.email} joined {event.title}. New Total: {request.user.star_rating}")
 
             return Response({
                 'message': 'Successfully joined event',
@@ -78,6 +81,9 @@ def join_event(request, event_id):
             # Remove stars when leaving
             Star.objects.filter(receiver=request.user, event=event, giver=None).delete()
             participant.delete()
+            
+            request.user.refresh_from_db()
+            
             return Response({
                 'message': 'Left event',
                 'total_stars': request.user.star_rating,

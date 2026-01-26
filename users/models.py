@@ -70,4 +70,20 @@ class Star(models.Model):
     def __str__(self):
         if self.event:
             return f"{self.receiver.username} received {self.quantity} stars for {self.event.title}"
-        return f"{self.giver.username} gave a star to {self.receiver.username}"
+        if self.giver:
+            return f"{self.giver.username} gave {self.quantity} star(s) to {self.receiver.username}"
+        return f"{self.receiver.username} received {self.quantity} star(s)"
+
+# Signal to update UserStats when stars change
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver as signal_receiver
+
+@signal_receiver(post_save, sender=Star)
+@signal_receiver(post_delete, sender=Star)
+def update_user_stats(sender, instance, **kwargs):
+    from veteran_hub.models import UserStats
+    user = instance.receiver
+    stats, _ = UserStats.objects.get_or_create(user=user)
+    stats.connections_made = user.star_rating
+    stats.save()
+    print(f"SIGNAL: Updated stats for {user.email}. New total stars in Stats: {stats.connections_made}")
