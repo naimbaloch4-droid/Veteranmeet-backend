@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from django.db import models
 from .models import SupportGroup, GroupMembership, GroupPost
 from .serializers import SupportGroupSerializer, GroupMembershipSerializer, GroupPostSerializer
 
@@ -19,9 +20,17 @@ class SupportGroupViewSet(viewsets.ModelViewSet):
         topic = self.request.query_params.get('topic')
         if topic:
             queryset = queryset.filter(topic__icontains=topic)
-        return queryset.filter(privacy_level='public').union(
-            queryset.filter(members=self.request.user)
+        # Return groups that are either public or where the user is a member
+        return queryset.filter(
+            models.Q(privacy_level='public') | models.Q(members=self.request.user)
         ).distinct()
+
+    @action(detail=False, methods=['get'])
+    def my_groups(self, request):
+        """Get groups the user is a member of"""
+        groups = SupportGroup.objects.filter(members=request.user)
+        serializer = self.get_serializer(groups, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def join(self, request, pk=None):
