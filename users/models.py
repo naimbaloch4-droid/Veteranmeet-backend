@@ -61,7 +61,7 @@ class Star(models.Model):
     giver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stars_given', null=True, blank=True)
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stars_received')
     quantity = models.PositiveIntegerField(default=1)
-    event = models.ForeignKey('events.Event', on_delete=models.CASCADE, related_name='awarded_stars', null=True, blank=True)
+    event = models.ForeignKey('events.Event', on_delete=models.SET_NULL, related_name='awarded_stars', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
