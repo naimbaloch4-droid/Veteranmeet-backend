@@ -128,7 +128,7 @@ class UserStarsView(generics.ListAPIView):
 def give_star(request, user_id):
     if str(request.user.id) == str(user_id):
         return Response({'error': 'Cannot give star to yourself'}, status=status.HTTP_400_BAD_REQUEST)
-    
+
     try:
         receiver = User.objects.get(id=user_id)
         star, created = Star.objects.get_or_create(giver=request.user, receiver=receiver)
@@ -142,8 +142,15 @@ def give_star(request, user_id):
             star.delete()
             return Response({
                 'message': 'Star removed',
-                'action': 'removed', 
+                'action': 'removed',
                 'total_stars': receiver.star_rating
             })
     except User.DoesNotExist:
         return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+def get_online_users():
+    threshold = timezone.now() - timedelta(minutes=5)
+    online_user_ids = User.objects.filter(
+        last_activity__gte=threshold
+    ).values_list('id', flat=True)
+    return list(online_user_ids)
