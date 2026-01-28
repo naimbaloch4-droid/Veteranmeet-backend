@@ -1,5 +1,5 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
@@ -62,9 +62,13 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def online_users(self, request):
+        """
+        Alternative endpoint for getting online user IDs.
+        Accessible at: /api/chat/rooms/online_users/
+        """
         online_users = get_online_users()
-        serializer = UserSerializer(online_users, many=True)
-        return Response(serializer.data)
+        online_user_ids = list(online_users.values_list('id', flat=True))
+        return Response({'online_users': online_user_ids})
 
 class ChatMessageViewSet(viewsets.ModelViewSet):
     serializer_class = ChatMessageSerializer
@@ -115,3 +119,26 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             return Response({'status': 'marked as read'})
         except ChatMessage.DoesNotExist:
             return Response({'error': 'Message not found'}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def heartbeat(request):
+    """
+    Update the authenticated user's last_activity timestamp.
+    This endpoint is called by the frontend every 2 minutes to maintain online status.
+    """
+    try:
+        # Update last_activity for the current user
+        request.user.last_activity = timezone.now()
+        request.user.save(update_fields=['last_activity'])
+        
+        return Response({
+            'success': True,
+            'last_activity': request.user.last_activity.isoformat(),
+            'user_id': request.user.id
+        })
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
