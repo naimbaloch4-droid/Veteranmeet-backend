@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .views import ChatRoomViewSet, ChatMessageViewSet, heartbeat
+from .views import ChatRoomViewSet, ChatMessageViewSet, heartbeat, mark_offline
 from users.views import get_online_users
 from users.serializers import UserSerializer
 
@@ -26,5 +26,6 @@ def online_users_view(request):
 urlpatterns = [
     path('online-users/', online_users_view, name='online-users'),
     path('heartbeat/', heartbeat, name='heartbeat'),
+    path('mark-offline/', mark_offline, name='mark-offline'),
     path('', include(router.urls)),
 ]

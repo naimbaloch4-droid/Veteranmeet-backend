@@ -142,3 +142,27 @@ def heartbeat(request):
             'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def mark_offline(request):
+    """
+    Mark the authenticated user as offline by setting last_activity to a very old timestamp.
+    This endpoint is called by the frontend when the user logs out.
+    """
+    try:
+        from datetime import datetime
+        # Set last_activity to epoch (1970-01-01) to ensure user appears offline immediately
+        request.user.last_activity = datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+        request.user.save(update_fields=['last_activity'])
+        
+        return Response({
+            'success': True,
+            'message': 'User marked as offline',
+            'user_id': request.user.id
+        })
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
