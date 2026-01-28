@@ -60,6 +60,12 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(room)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=['get'])
+    def online_users(self, request):
+        online_users = get_online_users()
+        serializer = UserSerializer(online_users, many=True)
+        return Response(serializer.data)
+
 class ChatMessageViewSet(viewsets.ModelViewSet):
     serializer_class = ChatMessageSerializer
     permission_classes = [IsAuthenticated]

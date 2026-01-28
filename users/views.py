@@ -4,6 +4,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, login
+from django.utils import timezone
+from datetime import timedelta
 from .models import User, Profile, Star
 from .serializers import (
     UserRegistrationSerializer, UserSerializer, ProfileSerializer, StarSerializer,
@@ -150,7 +152,7 @@ def give_star(request, user_id):
 
 def get_online_users():
     threshold = timezone.now() - timedelta(minutes=5)
-    online_user_ids = User.objects.filter(
+    online_users = User.objects.filter(
         last_activity__gte=threshold
-    ).values_list('id', flat=True)
-    return list(online_user_ids)
+    )
+    return online_users
