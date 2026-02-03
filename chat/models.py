@@ -9,8 +9,14 @@ class ChatRoom(models.Model):
     name = models.CharField(max_length=255, blank=True)
     room_type = models.CharField(max_length=10, choices=ROOM_TYPE_CHOICES, default='direct')
     participants = models.ManyToManyField(User, related_name='chat_rooms')
+    last_message = models.ForeignKey('ChatMessage', null=True, blank=True, on_delete=models.SET_NULL, related_name='+')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['-updated_at']),
+        ]
 
     def __str__(self):
         return self.name or f"Room {self.id}"
@@ -24,6 +30,10 @@ class ChatMessage(models.Model):
 
     class Meta:
         ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['room', 'created_at']),
+            models.Index(fields=['room', 'is_read']),
+        ]
 
     def __str__(self):
         return f"{self.sender.username}: {self.content[:50]}"

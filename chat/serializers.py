@@ -6,16 +6,32 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     participants = UserSerializer(many=True, read_only=True)
     participant_ids = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
     last_message = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
+    type = serializers.CharField(source='room_type', read_only=True)  # Alias for frontend compatibility
 
     class Meta:
         model = ChatRoom
-        fields = ['id', 'name', 'room_type', 'participants', 'participant_ids', 'last_message', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'type', 'room_type', 'participants', 'participant_ids', 'last_message', 'unread_count', 'created_at', 'updated_at']
 
     def get_last_message(self, obj):
-        last_msg = obj.messages.last()
+        # Use the last_message FK if available for performance
+        last_msg = obj.last_message if obj.last_message else obj.messages.last()
         if last_msg:
             return ChatMessageSerializer(last_msg).data
         return None
+
+    def get_unread_count(self, obj):
+        """Get unread message count for the current user"""
+        request = self.context.get('request')
+        if not request or not request.user:
+            return 0
+        
+        # Count messages in this room that are:
+        # 1. Not read (is_read=False)
+        # 2. Not sent by the current user
+        return obj.messages.filter(
+            is_read=False
+        ).exclude(sender=request.user).count()
 
     def create(self, validated_data):
         participant_ids = validated_data.pop('participant_ids', [])

@@ -19,8 +19,8 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         if getattr(self, 'swagger_fake_view', False):
             return ChatRoom.objects.none()
         if self.request.user.is_superuser:
-            return ChatRoom.objects.all()
-        return ChatRoom.objects.filter(participants=self.request.user).distinct()
+            return ChatRoom.objects.all().order_by('-updated_at')
+        return ChatRoom.objects.filter(participants=self.request.user).distinct().order_by('-updated_at')
 
     @action(detail=True, methods=['get'])
     def sync(self, request, pk=None):
@@ -60,6 +60,24 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(room)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=['post'])
+    def mark_read(self, request, pk=None):
+        """
+        Mark all messages in this room as read for the current user.
+        Only marks messages where the current user is NOT the sender.
+        """
+        room = self.get_object()
+        
+        # Update all unread messages in this room (excluding user's own messages)
+        updated_count = room.messages.filter(
+            is_read=False
+        ).exclude(sender=request.user).update(is_read=True)
+        
+        return Response({
+            'message': 'All messages marked as read',
+            'updated_count': updated_count
+        })
+
     @action(detail=False, methods=['get'])
     def online_users(self, request):
         """
@@ -88,8 +106,12 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         message = serializer.save()
         
-        # Logic to notify other participants in the room
+        # Update room's last_message and updated_at
         room = message.room
+        room.last_message = message
+        room.save(update_fields=['last_message', 'updated_at'])
+        
+        # Logic to notify other participants in the room
         sender = message.sender
         participants = room.participants.exclude(id=sender.id)
         
