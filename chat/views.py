@@ -77,6 +77,39 @@ class ChatRoomViewSet(viewsets.ModelViewSet):
             'message': 'All messages marked as read',
             'updated_count': updated_count
         })
+    
+    @action(detail=True, methods=['post'])
+    def typing(self, request, pk=None):
+        """
+        Update typing status for a room.
+        Endpoint: POST /api/chat/rooms/{id}/typing/
+        Request: {"is_typing": true/false}
+        """
+        room = self.get_object()
+        is_typing = request.data.get('is_typing', False)
+        
+        # Check if user is participant
+        if request.user not in room.participants.all():
+            return Response(
+                {'error': 'Not a participant'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        if is_typing:
+            room.typing_user = request.user
+            room.typing_updated_at = timezone.now()
+        else:
+            # Clear typing if this user was typing
+            if room.typing_user == request.user:
+                room.typing_user = None
+                room.typing_updated_at = None
+        
+        room.save(update_fields=['typing_user', 'typing_updated_at'])
+        
+        return Response({
+            'success': True,
+            'message': 'Typing status updated'
+        })
 
     @action(detail=False, methods=['get'])
     def online_users(self, request):
@@ -141,6 +174,51 @@ class ChatMessageViewSet(viewsets.ModelViewSet):
             return Response({'status': 'marked as read'})
         except ChatMessage.DoesNotExist:
             return Response({'error': 'Message not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=False, methods=['get'])
+    def poll(self, request):
+        """
+        Poll for new messages since a specific timestamp.
+        Endpoint: GET /api/chat/messages/poll/?room_id={id}&since={timestamp}
+        Returns only new messages created after the 'since' timestamp.
+        """
+        room_id = request.query_params.get('room_id')
+        since = request.query_params.get('since')  # ISO timestamp
+        
+        if not room_id:
+            return Response(
+                {'error': 'room_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Base queryset
+        queryset = ChatMessage.objects.filter(room_id=room_id)
+        
+        # Security check: User must be participant
+        if not request.user.is_superuser:
+            queryset = queryset.filter(room__participants=request.user)
+        
+        # Filter by timestamp if provided
+        if since:
+            try:
+                from dateutil import parser
+                since_datetime = parser.isoparse(since)
+                queryset = queryset.filter(created_at__gt=since_datetime)
+            except (ValueError, TypeError):
+                return Response(
+                    {'error': 'Invalid timestamp format. Use ISO 8601 format.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Order by created_at
+        messages = queryset.order_by('created_at')
+        serializer = ChatMessageSerializer(messages, many=True, context={'request': request})
+        
+        return Response({
+            'messages': serializer.data,
+            'timestamp': timezone.now().isoformat(),
+            'count': len(serializer.data)
+        })
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
