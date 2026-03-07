@@ -90,11 +90,14 @@ def update_user_stats(sender, instance, **kwargs):
     try:
         from veteran_hub.models import UserStats
         user = instance.receiver
-        if not user:
+        if not user or not user.pk:
             return
-            
+
+        # Skip if the user is being deleted (no longer in DB)
+        if not User.objects.filter(pk=user.pk).exists():
+            return
+
         stats, created = UserStats.objects.get_or_create(user=user)
-        # Force a fresh count of the stars from the DB
         stats.connections_made = user.star_rating
         stats.save()
         print(f"SIGNAL: Updated stats for {user.email}. Total: {stats.connections_made}")

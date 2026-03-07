@@ -1,4 +1,5 @@
 from rest_framework import generics, status
+from django.db import transaction
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from rest_framework.response import Response
@@ -100,10 +101,18 @@ class UserViewSet(viewsets.ModelViewSet):
                 return AdminUserCreateSerializer
             elif self.action in ['update', 'partial_update']:
                 return AdminUserUpdateSerializer
-        
+
         if self.action == 'create':
             return UserRegistrationSerializer
         return UserSerializer
+
+    def perform_destroy(self, instance):
+        try:
+            with transaction.atomic():
+                instance.delete()
+        except Exception as e:
+            print(f"DELETE ERROR for user {instance.pk}: {e}")
+            raise
 
 class StarListCreateView(generics.ListCreateAPIView):
     serializer_class = StarSerializer
