@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: veteranmeet-api
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn veteranmeet.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: ADMIN_EMAIL
+        sync: false        # set this manually in Render dashboard → Secret
+      - key: ADMIN_PASSWORD
+        sync: false        # set this manually in Render dashboard → Secret
+      - key: ADMIN_USERNAME
+        value: admin
