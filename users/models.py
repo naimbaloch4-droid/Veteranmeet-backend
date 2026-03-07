@@ -93,13 +93,13 @@ def update_user_stats(sender, instance, **kwargs):
         if not user or not user.pk:
             return
 
-        # Skip if the user is being deleted (no longer in DB)
-        if not User.objects.filter(pk=user.pk).exists():
-            return
-
-        stats, created = UserStats.objects.get_or_create(user=user)
+        # Only UPDATE — never create. If UserStats was already cascade-deleted
+        # (e.g. during user deletion) get() raises DoesNotExist and we skip safely.
+        stats = UserStats.objects.get(user=user)
         stats.connections_made = user.star_rating
-        stats.save()
+        stats.save(update_fields=['connections_made', 'last_updated'])
         print(f"SIGNAL: Updated stats for {user.email}. Total: {stats.connections_made}")
+    except UserStats.DoesNotExist:
+        pass  # User or their stats are being deleted — nothing to update
     except Exception as e:
         print(f"SIGNAL ERROR: Could not update UserStats: {str(e)}")
