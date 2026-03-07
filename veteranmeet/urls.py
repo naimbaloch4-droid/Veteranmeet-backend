@@ -2,26 +2,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from .views import home_view, api_root
-
-schema_view = get_schema_view(
-   openapi.Info(
-      title="VeteranMeet API",
-      default_version='v1',
-      description="A comprehensive Django REST API for a veteran community platform with chat, support groups, resources, and hub features",
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
-)
 
 urlpatterns = [
     path('', home_view, name='home'),
     path('admin/', admin.site.urls),
     path('api/', api_root, name='api-root'),
-    path('api/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='schema-swagger-ui'),
     path('api/auth/', include('users.urls')),
     path('api/events/', include('events.urls')),
     path('api/posts/', include('posts.urls')),
