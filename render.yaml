@@ -7,6 +7,8 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.9"
+      - key: RENDER_PYTHON_VERSION
+        value: "3.11.9"
       - key: ADMIN_EMAIL
         sync: false        # set this manually in Render dashboard → Secret
       - key: ADMIN_PASSWORD

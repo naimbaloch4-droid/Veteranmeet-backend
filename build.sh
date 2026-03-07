@@ -3,6 +3,9 @@
 
 set -o errexit  # exit on error
 
+# Install setuptools first so pkg_resources is available for drf-yasg on Python 3.12+
+pip install --upgrade setuptools
+
 pip install -r requirements.txt
 
 python manage.py migrate --no-input
